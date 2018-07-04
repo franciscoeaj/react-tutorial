@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import axios from 'axios';
 import './index.css';
 
 function Square(props) {
@@ -36,18 +37,22 @@ class Board extends React.Component {
   }
 
   render() {
-		const winner = calculateWinner(this.state.squares);
+  	let winner = getWinner(this.state.squares)
+			.then(res => res.data);
+
+		console.log(winner);
+
 		let status;
 
-		if (winner) {
-			status = 'Winner: ' + winner;
+		if (winner === 'X' || winner === 'O') {
+			status = 'O ganhador é: ' + winner;
 		} else {
-			status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O')
+			status = 'Vez de: ' + (this.state.xIsNext ? 'X' : 'O');
 		}
 
     return (
       <div>
-        <div className="status">{status}</div>
+        <div className="status">{ status }</div>
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -84,27 +89,18 @@ class Game extends React.Component {
   }
 }
 
-function calculateWinner(squares) {
-	const possibleWins = [
-		[0, 1, 2],
-		[3, 4, 5],
-		[6, 7, 8],
-		[0, 3, 6],
-		[1, 4, 7],
-		[2, 5, 8],
-		[0, 4, 8],
-		[2, 4, 6],
-	];
+function getWinner(squares) {
+	const squaresObject = {
+		"json_data": JSON.stringify(squares),
+	};
 
-	for (let i = 0; i < possibleWins.length; i++) {
-		const [a, b, c] = possibleWins[i];
-
-		if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-			return squares[a];
-		}
-	}
-
-	return null;
+	return axios.post('http://localhost:3456/calculate-winner', squaresObject)
+	  .then((res) => {
+	  	return res;
+	  })
+	  .catch((err) => {
+	  	console.log(err);
+	  });
 }
 
 // ========================================
